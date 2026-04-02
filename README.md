@@ -1,75 +1,132 @@
-# Git SmartCommit CLI
+# Smart Commit
 
-**AI-powered Git commit generation running *100% locally* on your Mac using Apple Intelligence.**
+AI-powered Git commit message generator. Analyzes your staged changes and generates a structured, accurate commit message — locally, privately, and for free.
 
-SmartCommit is a lightweight CLI tool that analyzes your staged Git changes and generates concise, professional [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:`, etc.). 
-
-Because it runs completely on-device using the Apple Foundation Models SDK, it offers massive advantages over cloud-based AI tools:
-
-* **Privacy-First:** Your codebase never leaves your machine. Perfect for enterprise, proprietary, or sensitive code.
-* **Zero API Costs:** No OpenAI API keys or GitHub Copilot subscriptions required. It uses the AI already built into your Mac.
-* ️**Fast:** Powered natively by Apple Silicon neural engines for instant inference.
+Originally created by [brazill7](https://github.com/brazill7/smart-commit). This fork adds Ollama, Groq, and Gemini support, safety checks, and UX improvements.
 
 ---
 
-##  Prerequisites
+## What it does
 
-Before installing, ensure your machine meets the hardware and software requirements for local Apple Intelligence:
-* **Hardware:** Apple Silicon Mac (M1 chip or newer).
-* **OS:** macOS 15.0 (Sequoia) or newer.
-* **Settings:** Apple Intelligence must be enabled on your Mac.
+- Reads your staged `git diff`
+- Generates a commit message using AI with this format:
+
+```
+[Feature] Short summary title
+- Added X
+- Removed Y
+- Fixed Z
+```
+
+- You can accept, give feedback to regenerate, or abort
+
+---
+
+## Providers
+
+| Provider | Requires | Internet |
+|----------|----------|----------|
+| Ollama (default) | Ollama installed locally | No |
+| Apple Intelligence | Apple Silicon + macOS 15+ | No |
+| Groq | Free API key | Yes |
+| Gemini | Google API key | Yes |
+
+---
+
+## Requirements
+
+- Python 3.11+
+- Git
+- One of the supported AI providers (see above)
 
 ---
 
 ## Installation
 
+**1. Clone the repo**
 ```bash
-# 1. Download the latest release
-curl -fsSL -o smartcommit https://github.com/brazill7/smart-commit/releases/latest/download/smartcommit
+git clone https://github.com/geoClink/smart-commit.git
+cd smart-commit
+```
 
-# 2. Make the file executable
-chmod +x smartcommit
+**2. Install dependencies**
+```bash
+pip3.11 install apple-fm-sdk ollama groq google-genai
+```
 
-# 3. Clear the macOS Gatekeeper quarantine flag (required for unsigned binaries)
-xattr -d com.apple.quarantine smartcommit
-
-# 4. Move it to your local bin so it can be run from anywhere
-sudo mv smartcommit /usr/local/bin/
-
-### (Optional) Set up a Git Alias
-If you want to use this tool natively within Git (e.g., typing `git sc` or `git smart-commit` etc. ), you can add a global alias:
-
-git config --global alias.sc '!smartcommit'
-git config --global alias.smart-commit '!smartcommit'
+**3. Set up the git alias**
+```bash
+git config --global alias.sc '!python3.11 ~/smart-commit/smartcommit.py'
 ```
 
 ---
 
 ## Usage
 
-Make sure you have staged your changes (`git add .`) before running the tool.
+Stage your files, then run from any project:
 
-### Option A: Using the Standalone Command
-If you skipped the alias step, you can just call the tool directly in your repository:
+```bash
+git add .
+git sc
+```
 
-`smartcommit`
+### Use a specific provider
 
-To provide custom context to the AI (like explaining  *why*  you made a change), use the `-c` flag:
+```bash
+git sc --provider ollama       # default, no API key needed
+git sc --provider apple        # Apple Intelligence (on-device)
+git sc --provider groq         # requires GROQ_API_KEY
+git sc --provider gemini       # requires GEMINI_API_KEY
+```
 
-`smartcommit -c "race condition on the login screen"`
+### Add context to guide the AI
 
+```bash
+git sc -c "fixes login race condition"
+```
 
-### Option B: Using the Git Alias
-If you configured the `git smart-commit` alias, you can use it just like a native Git command:
+### Preview without committing
 
-`git smart-commit`
+```bash
+git sc --dry-run
+```
 
-With custom context:
+---
 
-`git smart-commit -c "refactored the login auth flow"`
+## Ollama Setup
 
+```bash
+brew install ollama
+brew services start ollama
+ollama pull qwen2.5-coder
+pip3.11 install ollama
+```
 
-**Example Output:**
-> Analyzing diff...
-> Suggested commit: **fix: resolve race condition in login flow**
-> Accept this commit message? (y/n): 
+Then just use `git sc` — Ollama runs in the background automatically.
+
+---
+
+## Groq Setup (optional)
+
+Get a free API key at [console.groq.com](https://console.groq.com) and add it to your shell:
+
+```bash
+echo 'export GROQ_API_KEY=your_key_here' >> ~/.zshrc
+source ~/.zshrc
+```
+
+---
+
+## Safety Features
+
+- Warns if committing directly to `main` or `master`
+- Warns if sensitive files (`.env`, `.pem`, `id_rsa`, etc.) are staged
+- Detects possible secrets or API keys in your diff
+- Warns on unusually large commits
+- Warns about unstaged or untracked files
+
+---
+
+## Credits
+
+Original project by [brazill7](https://github.com/brazill7/smart-commit).

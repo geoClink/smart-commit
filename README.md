@@ -26,7 +26,8 @@ Originally created by [brazill7](https://github.com/brazill7/smart-commit). This
 
 | Provider | Requires | Internet |
 |----------|----------|----------|
-| Ollama (default) | Ollama installed locally | No |
+| MLX (default) | Apple Silicon | No |
+| Ollama | Ollama installed locally | No |
 | Apple Intelligence | Apple Silicon + macOS 15+ | No |
 | Groq | Free API key | Yes |
 | Gemini | Google API key | Yes |
@@ -51,7 +52,7 @@ cd smart-commit
 
 **2. Install dependencies**
 ```bash
-pip3.11 install apple-fm-sdk ollama groq google-genai
+pip3.11 install apple-fm-sdk mlx-lm ollama groq google-genai
 ```
 
 **3. Set up the git alias**
@@ -73,7 +74,8 @@ git sc
 ### Use a specific provider
 
 ```bash
-git sc --provider ollama       # default, no API key needed
+git sc --provider mlx          # default, Apple Silicon only
+git sc --provider ollama       # no API key needed
 git sc --provider apple        # Apple Intelligence (on-device)
 git sc --provider groq         # requires GROQ_API_KEY
 git sc --provider gemini       # requires GEMINI_API_KEY
@@ -89,6 +91,22 @@ git sc -c "fixes login race condition"
 
 ```bash
 git sc --dry-run
+```
+
+---
+
+## MLX Setup (default)
+
+Requires Apple Silicon. Install the dependency and the model downloads automatically on first run:
+
+```bash
+pip3.11 install mlx-lm
+```
+
+The default model is `mlx-community/Qwen2.5-Coder-7B-Instruct-4bit`. You can override it:
+
+```bash
+git sc --mlx-model mlx-community/some-other-model
 ```
 
 ---
